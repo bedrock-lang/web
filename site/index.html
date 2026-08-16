@@ -1,13 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Home</title>
+  <meta name="description" content="Bedrock — an imperative, statically typed systems programming language with region-based memory management.">
+  <title>Bedrock — A systems programming language</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello Bedrock</h1>
+
+<header class="site">
+  <div class="wrap wide nav">
+    <a class="brand" href="/">Bedrock<span>.</span></a>
+    <nav class="links">
+      <a href="docs.html">Docs</a>
+      <a href="grammar.html">Grammar</a>
+      <a href="blog.html">Blog</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="home-hero">
+      <h1>Systems programming,<br>down to the bedrock.</h1>
+      <p class="lede">
+        <strong>Bedrock</strong> is an imperative, statically typed systems programming language
+        built around simplicity, readability, and practicality — the control of a systems
+        language without the ceremony.
+      </p>
+      <p class="lede">
+        Memory is managed automatically through a <strong>region-based memory model</strong>.
+        No <code>new</code>, no <code>free</code>, no garbage collector. Explicit low-level
+        control stays available when you need it, behind <code>unsafe</code>.
+      </p>
+      <div class="home-cta">
+        <a class="btn solid" href="docs.html">Read the docs</a>
+        <a class="btn" href="grammar.html">View the grammar</a>
+      </div>
+    </section>
+
+    <section class="home-cols">
+      <div>
+        <h3>Familiar by design</h3>
+        <p>An imperative core: procedures, functions, structs, and modules. No classes,
+        no inheritance, no hidden control flow.</p>
+      </div>
+      <div>
+        <h3>Regions, not GC</h3>
+        <p>Scoped arenas are bulk-freed the instant their block exits. Lifetimes are checked
+        at compile time by a simple escape rule.</p>
+      </div>
+      <div>
+        <h3>Explicit failure</h3>
+        <p>Errors and optional values live in the type system — <code>File!</code> can fail,
+        <code>?User</code> may be absent. Nothing fails silently.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>A taste of Bedrock</h2>
+<pre><code>import io
+
+type Person = struct
+    name: str,
+    age: u32,
+end
+
+proc greet(p: Person)
+    io.print("Hello ")
+    io.println(p.name)
+end
+
+proc main()
+    var user = Person(
+        name = "Alice",
+        age = 24,
+    )
+
+    greet(user)
+end</code></pre>
+      <p class="muted">Every block begins with a keyword and ends with <code>end</code>.
+      What you see is what runs.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap wide cols">
+    <div>© 2026 Bedrock Language</div>
+    <div>
+      <a href="docs.html">Docs</a> ·
+      <a href="grammar.html">Grammar</a> ·
+      <a href="blog.html">Blog</a> ·
+      <a href="terms.html">Terms</a> ·
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

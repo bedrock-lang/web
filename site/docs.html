@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bedrock language documentation — memory model, type system, error handling, unsafe, FFI.">
+  <title>Documentation — Bedrock</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap wide nav">
+    <a class="brand" href="/">Bedrock<span>.</span></a>
+    <nav class="links">
+      <a href="docs.html">Docs</a>
+      <a href="grammar.html">Grammar</a>
+      <a href="blog.html">Blog</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap wide page-head">
+    <h1>Documentation</h1>
+    <p class="muted">The Bedrock language reference — v0.1 draft.</p>
+  </div>
+
+  <div class="wrap wide docs-layout">
+    <nav class="docs-toc">
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#design-goals">Design goals</a></li>
+        <li><a href="#memory-model">Memory model</a></li>
+        <li><a href="#type-system">Type system</a></li>
+        <li><a href="#variables">Variables</a></li>
+        <li><a href="#type-declarations">Type declarations</a></li>
+        <li><a href="#procedures-and-functions">Procedures &amp; functions</a></li>
+        <li><a href="#control-flow">Control flow</a></li>
+        <li><a href="#match">Match</a></li>
+        <li><a href="#error-handling">Error handling</a></li>
+        <li><a href="#optional-values">Optional values</a></li>
+        <li><a href="#modules">Modules</a></li>
+        <li><a href="#visibility">Visibility</a></li>
+        <li><a href="#comments">Comments</a></li>
+        <li><a href="#pointers">Pointers</a></li>
+        <li><a href="#unsafe">Unsafe</a></li>
+        <li><a href="#ffi">Foreign function interface</a></li>
+        <li><a href="#example-program">Example program</a></li>
+        <li><a href="#philosophy">Philosophy</a></li>
+      </ul>
+    </nav>
+
+    <div class="doc-content">
+
+      <h2 id="introduction">Introduction</h2>
+      <p><code>Bedrock</code> is an imperative, statically typed systems programming language designed
+      around simplicity, readability, and practicality.</p>
+      <p>The goal is to provide the control expected from a systems language while removing unnecessary
+      complexity from the programming model.</p>
+      <p>Memory is managed automatically through a <strong>region-based memory model</strong>. For C
+      interoperability an <code>unsafe</code> block is required.</p>
+      <p>The language intentionally avoids object-oriented programming. Programs are built using
+      procedures, functions, structs, and modules instead of classes or inheritance.</p>
+
+      <h2 id="design-goals">Design goals</h2>
+      <p>The language is built around a few core principles.</p>
+      <ul>
+        <li>Imperative programming model.</li>
+        <li>Static type system.</li>
+        <li>Automatic memory management.</li>
+        <li>Data-oriented design.</li>
+        <li>Explicit low-level control using <code>unsafe</code> when required.</li>
+        <li>Compile time meta-programming using <code>comptime</code>.</li>
+      </ul>
+
+      <h2 id="memory-model">Memory model</h2>
+      <p>The language uses automatic memory management through <strong>regions</strong>: scoped arenas
+      that are bulk-freed the instant their enclosing <code>region</code> block exits. Programmers never
+      manually allocate or free ordinary language objects.</p>
+<pre><code>var person = Person(
+    name = "Alice",
+    age = 24,
+)</code></pre>
+      <p>There is no <code>new</code>, <code>delete</code>, <code>malloc</code>, or <code>free</code>
+      in generic programs.</p>
+
+      <h3>Regions</h3>
+      <p>A <code>region</code> block introduces a new arena. Any composite value declared inside it is
+      allocated there by default:</p>
+<pre><code>region R
+    var p = Person(id = 0, age = 24)
+end</code></pre>
+      <p>When <code>R</code> ends, everything allocated inside it is reclaimed at once — no tracing,
+      no per-object bookkeeping.</p>
+
+      <h3>Value types vs. reference types</h3>
+      <ul>
+        <li><strong>Primitive types</strong> (<code>i8</code>…<code>f64</code>, <code>bool</code>,
+        <code>char</code>, <code>str</code>) are true value types. Assigning or passing them always
+        copies the bits.</li>
+        <li><strong>Composite types</strong> (structs, arrays, enums) behave as handles into
+        region-owned storage. A <code>var</code> of composite type is bound to wherever the object
+        physically lives. Assigning <code>p1 = p2</code> rebinds <code>p1</code> to the same storage
+        <code>p2</code> refers to — it does not deep-copy the fields.</li>
+      </ul>
+
+      <h3>The escape rule</h3>
+      <p>For any assignment, <code>return</code>, struct-field write, or argument passed to a
+      <code>&amp;</code>-typed parameter, the region backing the right-hand side must be equal to, or an
+      ancestor of (opened earlier than, and still open at) the region backing the left-hand side.
+      Regions form a stack, so this is checked as simple region ancestry, at compile time.</p>
+<pre><code>func person() -&gt; void
+    region R
+      var p1 = Person(id = 0, age = 24)
+      region I
+        var p2 =  Person(id = 0, age = 24)
+        p1 = p2                        // error: region R outlives I
+    end
+end</code></pre>
+      <p>Here <code>p1 = p2</code> would rebind <code>p1</code> to storage in <code>I</code>.
+      <code>I</code> closes before <code>R</code> does, so once <code>I</code> ends,
+      <code>p1</code> — still treated as belonging to <code>R</code> — would dangle. The escape rule
+      rejects this at compile time.</p>
+
+      <h3>Returning values from a region</h3>
+      <p>Returning <strong>by value</strong> (<code>-&gt; Person</code>, no <code>&amp;</code>) copies the
+      object out of its region into storage owned by the caller. This is safe even though the source
+      region closes right after:</p>
+<pre><code>func ret_person() -&gt; Person
+    region R
+      var p = Person(id = 0, age = 24)
+      return p
+    end
+end</code></pre>
+      <p>Returning <strong>by reference</strong> (<code>-&gt; &amp;Person</code>) keeps it as a handle,
+      still subject to the escape rule:</p>
+<pre><code>func ret_person() -&gt; &amp;Person
+    region R
+      var p = Person(id = 0, age = 24)
+      return &amp;p
+    end
+end</code></pre>
+      <p>Here <code>&amp;p</code> is backed by <code>R</code>, and <code>R</code> closes before the
+      caller can use the returned reference. This is rejected at compile time — the compiler determines
+      that the lifetime <code>p</code> needs is the caller's, but <code>R</code> ends before that,
+      preventing a dangling reference.</p>
+
+      <h3>Region promotion</h3>
+      <p>Sometimes a function needs to allocate memory that belongs to a region passed in by the
+      caller. A function introduces a lifetime, named with <code>@name</code>, at its first occurrence
+      in the parameter list:</p>
+<pre><code>func process(parent: &amp;@p Person)
+    var child = new(@p) Person(name = "Alice")
+    parent.child = child
+end</code></pre>
+      <p><code>@p</code> is a lifetime bound to <code>process</code>'s signature and body. At each call
+      site the compiler substitutes it with the caller's actual region and checks the escape rule as
+      usual.</p>
+
+      <h3>Static promotion</h3>
+      <p><code>@static</code> is the one reserved lifetime — the program's whole duration. It is used
+      for lazy initialization of globals:</p>
+<pre><code>var p: &amp;Person
+
+proc foo()
+    var local = new(@static) Person(name = "Alice", age = 24)
+    p = &amp;local
+end</code></pre>
+      <p>This can be thought of as region promotion to the global region.</p>
+      <p>Note that plain <code>new Person(...)</code> (no lifetime given) allocates in the current
+      lexical region by default — standard arena behavior, reclaimed when that region goes out of
+      scope. <code>@static</code> is only needed when the allocation must outlive its current lexical
+      region, such as when assigning it to a global.</p>
+
+      <h3>Manual memory</h3>
+      <p>Manual memory management exists only for cases where the programmer needs to interact with:</p>
+      <ul>
+        <li>C interoperability</li>
+        <li>GPU buffers (future case)</li>
+      </ul>
+      <p>These are accessed through the FFI and require explicit management, entirely separate from
+      the region system above.</p>
+<pre><code>extern func malloc(size: usize) -&gt; *u8
+extern proc free(ptr: *u8)
+
+unsafe
+    var buffer = malloc(4096)
+    // ...
+    free(buffer)
+end</code></pre>
+
+      <h2 id="type-system">Type system</h2>
+      <p>The language uses static typing with compile-time type checking.</p>
+      <p>Primitive types include:</p>
+<pre><code>bool
+char
+str
+
+i8  i16  i32  i64
+u8  u16  u32  u64
+f32 f64
+
+usize
+isize</code></pre>
+      <p>Composite types include:</p>
+      <ul>
+        <li>Structs</li>
+        <li>Arrays</li>
+        <li>Pointers</li>
+        <li>Tagged enums</li>
+        <li>Function types</li>
+      </ul>
+
+      <h2 id="variables">Variables</h2>
+      <p>Variables are declared using <code>var</code>.</p>
+<pre><code>var age = 24</code></pre>
+      <p>If you want a mutable <code>var</code>:</p>
+<pre><code>var mut age = 24</code></pre>
+      <p>Explicit types may also be written:</p>
+<pre><code>var age: u32 = 24</code></pre>
+      <p>Compile-time constants use <code>const</code>.</p>
+<pre><code>comptime var PI = 3.141592</code></pre>
+
+      <h2 id="type-declarations">Type declarations</h2>
+      <p>All user-defined types begin with the <code>type</code> keyword.</p>
+
+      <h3>Structs</h3>
+<pre><code>type Person = struct
+    name: str,
+    age: u32,
+end</code></pre>
+
+      <h3>Enums</h3>
+<pre><code>type Person = enum
+    age(u8),
+    name(str),
+end</code></pre>
+      <p>Using a match expression on enums:</p>
+<pre><code>match P1
+  age(a_num) =&gt; // todo
+  name(n_str) =&gt; // todo
+end</code></pre>
+
+      <h2 id="procedures-and-functions">Procedures and functions</h2>
+      <p>The language distinguishes between procedures and functions.</p>
+      <p>A <strong>procedure</strong> performs work but does not return a value.</p>
+<pre><code>proc greet(name: str)
+    io.println(name)
+end</code></pre>
+      <blockquote>No return value (if given then error).</blockquote>
+      <p>A <strong>function</strong> returns a value.</p>
+<pre><code>func square(x: i32) -&gt; i32
+    return x * x
+end</code></pre>
+      <blockquote>Always requires a return value (if not given then error).</blockquote>
+      <p>This distinction is intentional and improves readability while reflecting the language's
+      procedural roots.</p>
+
+      <h3>Struct construction</h3>
+      <p>Structs are constructed using function-like syntax.</p>
+<pre><code>var p = Person(
+    name = "Alice",
+    age = 24,
+)</code></pre>
+
+      <h2 id="control-flow">Control flow</h2>
+      <p>Conditional statements use explicit block endings.</p>
+<pre><code>if value &gt; 10
+    io.println("Large")
+else
+    io.println("Small")
+end</code></pre>
+      <p>Loops follow the same style.</p>
+<pre><code>while running
+    update()
+end</code></pre>
+<pre><code>for i in 0..10
+    io.println(i)
+end</code></pre>
+      <p>Every block begins with a keyword and ends with <code>end</code>.</p>
+
+      <h2 id="match">Match</h2>
+      <p>Match expressions with tagged enums:</p>
+<pre><code>match color
+    Red   =&gt; io.println("Red")
+    Green =&gt; io.println("Green")
+    Blue  =&gt; io.println("Blue")
+    else  =&gt; io.println("Unknown")
+end</code></pre>
+      <p>Or with integers:</p>
+<pre><code>match opcode
+  0 =&gt; // todo
+  1 =&gt; // todo
+  else =&gt; // todo
+end</code></pre>
+
+      <h2 id="error-handling">Error handling</h2>
+      <p>Operations that may fail return an <strong>error type</strong>, making failure an explicit
+      part of the function's signature.</p>
+<pre><code>func open(path: str) -&gt; File!</code></pre>
+      <p>In the example above, <code>open</code> returns either a valid <code>File</code> or an error.
+      This approach makes error handling visible at compile time and avoids hidden control flow.</p>
+
+      <h3>Error propagation</h3>
+      <p>The language syntax provides a concise way to propagate errors.</p>
+<pre><code>func load_config() -&gt; Config!
+    var file = try open("config.cfg")
+    return try parse(file)
+end</code></pre>
+      <ul>
+        <li>If the operation succeeds, execution continues using the returned value.</li>
+        <li>If the operation returns an error, the current function immediately returns that error to
+        its caller.</li>
+      </ul>
+      <p>Conceptually, the following code:</p>
+<pre><code>var file = try open("config.cfg")</code></pre>
+      <p>is equivalent to:</p>
+<pre><code>var result = open("config.cfg")
+
+if result is error
+    return result
+end
+
+var file = result</code></pre>
+      <p>A function that can fail must explicitly indicate this in its return type:</p>
+<pre><code>func read_file(path: str) -&gt; File!</code></pre>
+      <p>A function that cannot fail simply returns its value:</p>
+<pre><code>func square(x: i32) -&gt; i32
+    return x * x
+end</code></pre>
+      <p>By making failure explicit, the language encourages developers to acknowledge and handle
+      error conditions rather than allowing them to be silently ignored.</p>
+
+      <h2 id="optional-values">Optional values</h2>
+      <p>Some operations may produce no value without it being considered an error. Such functions
+      return an <strong>optional type</strong>.</p>
+<pre><code>func find_user(id: u32) -&gt; ?User</code></pre>
+      <p>The return type <code>?User</code> indicates that the function returns either a valid
+      <code>User</code> or <code>null</code>.</p>
+      <p>Optional values make the absence of data explicit in the type system while avoiding the need
+      for sentinel values or null pointer checks throughout the language.</p>
+
+      <h3>The <code>orelse</code> operator</h3>
+      <p>The <code>orelse</code> operator provides a concise way to handle optional values. If the
+      optional contains a value, that value is returned. Otherwise, the expression following
+      <code>orelse</code> is evaluated.</p>
+<pre><code>var user = find_user(id) orelse User(
+    name = "Unknown",
+    age = 0,
+)</code></pre>
+      <ul>
+        <li>If <code>find_user()</code> returns a <code>User</code>, execution continues normally.</li>
+        <li>If it returns <code>null</code>, the <code>orelse</code> expression is used instead.</li>
+      </ul>
+      <p>This allows optional values to be handled without explicit conditional statements.</p>
+
+      <h2 id="modules">Modules</h2>
+      <p>Modules are imported using the <code>import</code> keyword.</p>
+<pre><code>import io
+import math
+import graphics.window</code></pre>
+      <p>Each source file represents one module.</p>
+
+      <h2 id="visibility">Visibility</h2>
+      <p>By default, every declaration is private to its defining module. To make a declaration
+      available to other modules, it must be marked with the <code>pub</code> keyword.</p>
+      <p>Public procedures:</p>
+<pre><code>pub proc greet(name: str)
+    io.println(name)
+end</code></pre>
+      <p>Public functions:</p>
+<pre><code>pub func add(a: i32, b: i32) -&gt; i32
+    return a + b
+end</code></pre>
+      <p>Public types:</p>
+<pre><code>pub type Person = struct
+    name: str,
+    age: u32,
+end</code></pre>
+      <p>Constants and variables may also be exported:</p>
+<pre><code>pub comptime var VERSION = "0.1"</code></pre>
+      <p>Members of a struct are also private by default.</p>
+
+      <h2 id="comments">Comments</h2>
+      <p>Single-line comments:</p>
+<pre><code>// This is a comment.</code></pre>
+      <p>Multi-line comments:</p>
+<pre><code>/*
+  Multiple
+  lines.
+*/</code></pre>
+
+      <h2 id="pointers">Pointers</h2>
+      <p>The language supports raw pointers, and safe, region-checked references.</p>
+<pre><code>var ptr: *i32</code></pre>
+      <p>Address-of:</p>
+<pre><code>&amp;value</code></pre>
+      <p>Dereference:</p>
+<pre><code>*ptr</code></pre>
+      <p><code>*T</code> is a raw pointer, meaningful only inside <code>unsafe</code>.
+      <code>&amp;T</code> (optionally <code>&amp;@lifetime T</code>) is a safe reference, checked against
+      the escape rule described in the memory model section above. Pointers provide direct memory
+      access when required while remaining explicit.</p>
+
+      <h2 id="unsafe">Unsafe</h2>
+      <p>The language is <strong>safe by default</strong>.</p>
+      <p>Ordinary language code is protected by the compiler and runtime. Memory for language objects
+      is managed automatically through the region model, eliminating the need for manual allocation
+      and deallocation in normal programs.</p>
+      <p>Certain low-level operations, however, cannot be verified or protected by the compiler.
+      These operations must be performed inside an <code>unsafe</code> block.</p>
+<pre><code>unsafe
+    // Unsafe operations
+end</code></pre>
+      <p>An <code>unsafe</code> block explicitly indicates that the programmer is taking
+      responsibility for the correctness of the enclosed code.</p>
+      <p>The presence of an <code>unsafe</code> block serves two purposes:</p>
+      <ul>
+        <li>It enables low-level operations that are otherwise prohibited.</li>
+        <li>It clearly communicates to readers that this section of code requires additional care and
+        review.</li>
+      </ul>
+      <p>Operations permitted within an <code>unsafe</code> block include:</p>
+      <ul>
+        <li>Manual memory allocation and deallocation.</li>
+        <li>Raw pointer dereferencing.</li>
+        <li>Pointer arithmetic.</li>
+        <li>Calling foreign (C) functions.</li>
+        <li>Accessing memory-mapped hardware.</li>
+        <li>Low-level memory manipulation.</li>
+        <li>Inline assembly (future).</li>
+      </ul>
+      <p>Example:</p>
+<pre><code>extern func malloc(size: usize) -&gt; *u8
+extern proc free(ptr: *u8)
+
+unsafe
+    var buffer = malloc(4096)
+    *(buffer + 8) = 42
+    free(buffer)
+end</code></pre>
+      <p>Objects created by the language remain managed by the region system even when referenced
+      inside an <code>unsafe</code> block.</p>
+<pre><code>var person = Person(
+    name = "Alice",
+    age = 24,
+)
+
+unsafe
+    var ptr = &amp;person
+    // Pointer operations...
+end</code></pre>
+      <p>In the example above, <code>person</code> is still owned by the language memory system.
+      <code>unsafe</code> simply removes the language's safety guarantees for the enclosed operations.
+      The responsibility for correctness shifts from the compiler to the programmer.</p>
+
+      <h2 id="ffi">Foreign function interface</h2>
+      <p>The language provides direct interoperability with C through the native ABI.</p>
+<pre><code>extern proc printf(fmt: *u8, ...)</code></pre>
+<pre><code>extern func malloc(size: usize) -&gt; *u8</code></pre>
+      <p>This allows seamless integration with existing operating system APIs and C/C++ libraries.</p>
+
+      <h2 id="example-program">Example program</h2>
+<pre><code>import io
+
+type Person = struct
+    name: str,
+    age: u32,
+end
+
+type Color = enum
+    red,
+    blue,
+    green,
+end
+
+func is_adult(p: Person) -&gt; bool
+    return p.age &gt;= 18
+end
+
+proc greet(p: Person)
+    io.print("Hello ")
+    io.println(p.name)
+end
+
+proc main()
+    var user = Person(
+        name = "Alice",
+        age = 24,
+    )
+
+    greet(user)
+
+    if is_adult(user)
+        io.println("Adult")
+    else
+        io.println("Minor")
+    end
+end</code></pre>
+
+      <h2 id="philosophy">Language philosophy</h2>
+      <p>This language intentionally avoids adding features simply because other languages have them.</p>
+      <p>Every feature must satisfy three questions:</p>
+      <ol>
+        <li>Is it easy to understand?</li>
+        <li>Is it easy to implement?</li>
+        <li>Does it genuinely improve systems programming?</li>
+      </ol>
+      <p>If the answer to any of these questions is no, the feature does not belong in the language.</p>
+      <p>The language favors clarity over cleverness, explicitness over magic, and practicality over
+      novelty.</p>
+      <p>The result is a systems programming language that feels familiar without being derivative,
+      modern without being complicated, and powerful without sacrificing readability.</p>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap wide cols">
+    <div>© 2026 Bedrock Language</div>
+    <div>
+      <a href="docs.html">Docs</a> ·
+      <a href="grammar.html">Grammar</a> ·
+      <a href="blog.html">Blog</a> ·
+      <a href="terms.html">Terms</a> ·
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  var heads = document.querySelectorAll('.doc-content h2[id]');
+  var links = document.querySelectorAll('.docs-toc a');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('active'); });
+        var a = map[e.target.id];
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  heads.forEach(function (h) { obs.observe(h); });
+</script>
+
+</body>
+</html>
