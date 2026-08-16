@@ -16,7 +16,6 @@
       <a href="docs.html">Docs</a>
       <a href="grammar.html">Grammar</a>
       <a href="blog.html">Blog</a>
-      <a href="terms.html">Terms</a>
       <a href="contact.html">Contact</a>
     </nav>
   </div>
@@ -59,32 +58,6 @@
         <code>?User</code> may be absent. Nothing fails silently.</p>
       </div>
     </section>
-
-    <section>
-      <h2>A taste of Bedrock</h2>
-<pre><code>import io
-
-type Person = struct
-    name: str,
-    age: u32,
-end
-
-proc greet(p: Person)
-    io.print("Hello ")
-    io.println(p.name)
-end
-
-proc main()
-    var user = Person(
-        name = "Alice",
-        age = 24,
-    )
-
-    greet(user)
-end</code></pre>
-      <p class="muted">Every block begins with a keyword and ends with <code>end</code>.
-      What you see is what runs.</p>
-    </section>
   </div>
 </main>
 
@@ -95,7 +68,6 @@ end</code></pre>
       <a href="docs.html">Docs</a> ·
       <a href="grammar.html">Grammar</a> ·
       <a href="blog.html">Blog</a> ·
-      <a href="terms.html">Terms</a> ·
       <a href="contact.html">Contact</a>
     </div>
   </div>

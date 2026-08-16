@@ -16,7 +16,6 @@
       <a href="../docs.html">Docs</a>
       <a href="../grammar.html">Grammar</a>
       <a href="../blog.html">Blog</a>
-      <a href="../terms.html">Terms</a>
       <a href="../contact.html">Contact</a>
     </nav>
   </div>
@@ -29,33 +28,6 @@
       <p class="post-meta">2026-08-17</p>
     </div>
 
-    <p>Bedrock is an imperative, statically typed systems programming language. We are
-    building it because we believe a systems language can be small without being primitive,
-    and safe without being slow.</p>
-
-    <p>The rules are simple. Every feature must be easy to understand, easy to implement, and
-    must genuinely improve systems programming. If a feature fails any of those tests, it does
-    not ship. That is the whole design process.</p>
-
-    <p>Concretely, Bedrock stands on four legs:</p>
-
-    <ul>
-      <li><strong>Regions for memory.</strong> Scoped arenas, bulk-freed on exit, checked at
-      compile time by a simple escape rule. No <code>malloc</code>, no <code>free</code>,
-      no garbage collector.</li>
-      <li><strong>Explicit failure.</strong> Functions that can fail say so in their return
-      type with <code>!</code>. Optional values say so with <code>?</code>. Nothing fails
-      silently.</li>
-      <li><strong>Safety by default, escape hatches on purpose.</strong> Low-level operations
-      exist, but only inside <code>unsafe</code> blocks that reviewers can grep for.</li>
-      <li><strong>Procedures and functions.</strong> A <code>proc</code> does work; a
-      <code>func</code> returns a value. The distinction is small and it makes code easier
-      to read.</li>
-    </ul>
-
-    <p>The <a href="../docs.html">documentation</a> and the <a href="../grammar.html">full
-    grammar</a> are on this site. The language is a draft and moving quickly — feedback is
-    welcome.</p>
   </article>
 </main>
 
@@ -66,7 +38,6 @@
       <a href="../docs.html">Docs</a> ·
       <a href="../grammar.html">Grammar</a> ·
       <a href="../blog.html">Blog</a> ·
-      <a href="../terms.html">Terms</a> ·
       <a href="../contact.html">Contact</a>
     </div>
   </div>
