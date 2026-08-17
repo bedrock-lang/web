@@ -265,6 +265,35 @@ pre code {
   font-family: var(--mono);
 }
 
+/* ---- team ---- */
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 2.2rem;
+  margin: 1rem 0 3.5rem;
+}
+
+.member { text-align: center; }
+
+.member h3 { margin: 0.7rem 0 0.1rem; }
+
+.member .avatar {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  border: 1px solid var(--rule-strong);
+  display: inline-block;
+}
+
+.member .github {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
 /* ---- misc ---- */
 
 .page-head { padding: 2.8rem 0 1rem; }
