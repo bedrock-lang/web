@@ -20,6 +20,9 @@ interoperability an `unsafe` block is required.
 The language intentionally avoids object-oriented programming. Programs are built using
 procedures, functions, structs, and modules instead of classes or inheritance.
 
+---
+---
+
 ## Getting Started
 
 Start by setting up your local development environment by installing the necessary tools according
@@ -416,7 +419,148 @@ type checking but for **proc** it's not at all necessary proved in obvious way t
 
 This also syncs well with the language's procedural roots.
 
-## to be continued...
+## Control Flow
+
+In bedrock control flow constructs includes and are not limited to `if`, `match`, `while`, `for`.
+
+### If
+
+If is used for conditional statement control flow.
+
+**used solo:**
+
+```c
+if (is_valid) doit(); end
+```
+
+**Use with else**
+
+```c
+if (is_valid) doit(); else dont(); end
+```
+
+**if-elif ladder**
+
+```c
+proc main()
+  var a = 10;
+  if (a == 1)
+    printf("1\n");
+  elif (a == 2)
+    printf("2\n");
+  elif (a == 3)
+    printf("3\n");
+end
+```
+
+**if-elif-else ladder**
+
+```c
+proc main()
+  var a = 10;
+  if (a == 1)
+    printf("1\n");
+  elif (a == 2)
+    printf("2\n");
+  elif (a == 3)
+    printf("3\n");
+  else
+    printf("neo\n");
+end
+```
+
+> output: neo
+
+### Match-Case (`todo`)
+
+The `match-case` statements are the `switch-case` of bedrock.
+
+You can use it for char, number, enums. The especiality of `match-case` is that it evaluates at compile
+time so using them makes runtime faster.
+
+Like using match for enums.
+
+```c
+match Color
+    case red
+        printf("red\n");
+    case yellow
+        printf("yellow\n");
+    case green
+        printf("green\n");
+end
+```
+
+Here if enum `Color` have more elements in it then just *red, yellow and green* then semantically it could
+give warning that not all variants were considered in the match-case.
+
+For such situation to handle the default case we have the `else` in match:
+
+```c
+match Color
+    case red
+        printf("red\n");
+    case yellow
+        printf("yellow\n");
+    case green
+        printf("green\n");
+    else
+        printf("no color\n");
+end
+```
+
+### While
+
+The **While** loop works in same style, by instatiating a while block ending with `end`.
+
+```c
+proc main()
+  var i = 0;
+  while i < 5
+    printf("%d\n", i);
+    i+=1;
+  end
+end
+```
+
+> output:  
+> 0  
+> 1  
+> 2  
+> 3  
+> 4  
+
+### For
+
+The **For** loop works in same style, by instatiating a for block ending with `end`.
+You specify a binding variable and a range or an iterable structure.
+
+```c
+proc main()
+  var arr = [10, 21, 42, 5];
+  for i in arr
+    printf("%d  ", i);
+  end
+end
+```
+
+> output: 10  21  42  5
+
+**for ranges too:**
+
+```c
+proc main()
+  for i in 7..10
+    printf("%d  ", i);
+  end
+end
+```
+> output: 7  8  9
+
+Here in both example the binding variable is `i` and it iterates over `arr` or the `range`.
+
+---
+---
 
 ## Installation Instructions
 
