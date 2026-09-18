@@ -1,0 +1,38 @@
+---
+layout: base.njk
+---
+<div class="wrap wide page-head">
+  <h1>{{ title }}</h1>
+  <p class="muted">{{ subtitle }}</p>
+</div>
+
+<div class="wrap wide docs-layout">
+  <nav class="docs-toc">
+    <ul>
+      {%- for h in content | headings %}
+      <li{% if h.level == 3 %} class="lvl3"{% endif %}><a href="#{{ h.id }}">{{ h.text }}</a></li>
+      {%- endfor %}
+    </ul>
+  </nav>
+
+  <div class="doc-content">
+{{ content | safe }}
+  </div>
+</div>
+
+<script>
+  var heads = document.querySelectorAll('.doc-content h2[id], .doc-content h3[id]');
+  var links = document.querySelectorAll('.docs-toc a');
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('active'); });
+        var a = map[e.target.id];
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  heads.forEach(function (h) { obs.observe(h); });
+</script>

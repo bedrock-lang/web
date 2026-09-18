@@ -1,0 +1,22 @@
+---
+layout: base.njk
+permalink: /blog.html
+title: Blog — Bedrock
+description: Bedrock language blog, design notes and announcements.
+---
+<div class="wrap page-head">
+  <h1>Blog</h1>
+  <p class="muted">Design notes, announcements, and progress on Bedrock.</p>
+</div>
+
+<div class="wrap">
+  <ul class="post-list">
+    {%- for post in collections.posts | reverse %}
+    <li>
+      <span class="date">{{ post.data.date | readableDate }}</span>
+      <a class="title" href="{{ post.url }}">{{ post.data.title }}</a>
+      <p>{{ post.data.description }}</p>
+    </li>
+    {%- endfor %}
+  </ul>
+</div>

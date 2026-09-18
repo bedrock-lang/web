@@ -1,35 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The Bedrock language grammar in BNF.">
-  <title>Grammar — Bedrock</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+---
+layout: wide-page.njk
+permalink: /grammar.html
+title: Grammar
+description: The Bedrock language grammar.
+subtitle: "bedrock-lang grammar"
+---
 
-<header class="site">
-  <div class="wrap wide nav">
-    <a class="brand" href="/">Bedrock<span>.</span></a>
-    <nav class="links">
-      <a href="docs.html">Docs</a>
-      <a href="grammar.html">Grammar</a>
-      <a href="blog.html">Blog</a>
-      <a href="team.html">Team</a>
-      <a href="contact.html">Contact</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-  <div class="wrap wide page-head">
-    <h1>Grammar</h1>
-    <p class="muted">The Bedrock language grammar, expressed in BNF — v0.1 draft.</p>
-  </div>
-
-  <div class="wrap wide">
-<pre><code># Program
+```text
+# Program
 program        = { item }
 item           = import_def | function | proc_def | struct_def | enum_def | extern_def
                | global_var_def | const_def
@@ -43,13 +21,13 @@ type_param      = IDENT
 # Functions and Procedures
 function        = [ "pub" ] [ "inline" ] "func" IDENT [ type_params ] "(" [ params ] ")" result block "end"
 proc_def        = [ "pub" ] [ "inline" ] "proc" IDENT [ type_params ] "(" [ params ] ")" block "end"
-result          = "-&gt;" type
+result          = "->" type
 params          = param { "," param } [ "," ]
 param           = IDENT ":" [ "const" ] type
 block           = { statement }
 
 # Foreign Function Interface
-extern_def      = "extern" ( "func" IDENT "(" [ extern_params ] ")" "-&gt;" type
+extern_def      = "extern" ( "func" IDENT "(" [ extern_params ] ")" "->" type
                     | "proc" IDENT "(" [ extern_params ] ")" ) ";"
 extern_params   = extern_param { "," extern_param } [ "," "..." ]
                 | "..."
@@ -88,7 +66,7 @@ place_expr      = "*" "(" expression ")"
                 | "*" IDENT
                 | IDENT { ( "." IDENT ) | ( "[" expression "]") }
 compound_op     = "+=" | "-=" | "*=" | "/=" | "%="
-                | "&amp;=" | "|=" | "^=" | "&lt;&lt;=" | "&gt;&gt;="
+                | "&=" | "|=" | "^=" | "<<=" | ">>="
 
 defer_stmt      = "defer" ( var_stmt | assign_stmt | control_flow_stmt | return_stmt | expr_stmt )
 
@@ -123,16 +101,16 @@ pattern_params  = pattern { "," pattern } [ "," ]
 expression      = orelse_expr
 orelse_expr     = or_expr [ "orelse" expression ]
 or_expr         = and_expr { "||" and_expr }
-and_expr        = comparison { "&amp;&amp;" comparison }
-comparison      = bitor_expr { ( "==" | "!=" | "&lt;" | "&gt;" | "&lt;=" | "&gt;=" ) bitor_expr }
+and_expr        = comparison { "&&" comparison }
+comparison      = bitor_expr { ( "==" | "!=" | "<" | ">" | "<=" | ">=" ) bitor_expr }
 bitor_expr      = bitxor_expr { "|" bitxor_expr }
 bitxor_expr     = bitand_expr { "^" bitand_expr }
-bitand_expr     = shift_expr { "&amp;" shift_expr }
-shift_expr      = range_expr { ( "&lt;&lt;" | "&gt;&gt;" ) range_expr }
+bitand_expr     = shift_expr { "&" shift_expr }
+shift_expr      = range_expr { ( "<<" | ">>" ) range_expr }
 range_expr      = additive [ ".." additive ]
 additive        = multiplicative { ( "+" | "-" ) multiplicative }
 multiplicative  = unary { ( "*" | "/" | "%" ) unary }
-unary           = ( "-" | "!" | "~" | "&amp;" | "*" | "try" ) unary | postfix
+unary           = ( "-" | "!" | "~" | "&" | "*" | "try" ) unary | postfix
 postfix         = primary { suffix }
 suffix          = "." IDENT
                 | "(" [ call_args ] ")"
@@ -189,22 +167,5 @@ BOOL            = "true" | "false"
 letter          = "a" | ... | "z" | "A" | ... | "Z"
 digit           = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 whitespace      = " " | "\t" | "\n" | "\r"
-line_comment    = "//" { any_char_except_newline }</code></pre>
-  </div>
-</main>
-
-<footer class="site">
-  <div class="wrap wide cols">
-    <div>© 2026 Bedrock Language</div>
-    <div>
-      <a href="docs.html">Docs</a> ·
-      <a href="grammar.html">Grammar</a> ·
-      <a href="blog.html">Blog</a> ·
-      <a href="team.html">Team</a> ·
-      <a href="contact.html">Contact</a>
-    </div>
-  </div>
-</footer>
-
-</body>
-</html>
+line_comment    = "//" { any_char_except_newline }
+```

@@ -1,0 +1,12 @@
+{
+  "name": "Bedrock",
+  "year": 2026,
+  "nav": [
+    { "text": "Docs", "url": "/docs.html" },
+    { "text": "Grammar", "url": "/grammar.html" },
+    { "text": "Blog", "url": "/blog.html" },
+    { "text": "Team", "url": "/team.html" },
+    { "text": "GitHub", "url": "https://github.com/bedrock-lang", "external": true },
+    { "text": "Discord", "url": "https://discord.gg/t9hJxA3qB", "external": true }
+  ]
+}

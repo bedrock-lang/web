@@ -316,3 +316,62 @@ th, td {
 th { background: var(--paper-dim); font-weight: 700; }
 
 .kw { color: var(--accent); font-weight: 700; }
+
+/* ---- code blocks: syntax highlighting + copy button ---- */
+
+pre {
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.25rem 0.55rem;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+pre:hover .copy-btn,
+.copy-btn:focus {
+  opacity: 1;
+}
+
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+/* Prism tokens, tuned to the paper palette instead of a stock dark theme */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata { color: var(--ink-faint); font-style: italic; }
+
+.token.punctuation { color: var(--ink-soft); }
+
+.token.keyword,
+.token.tag,
+.token.selector,
+.token.important { color: var(--accent); font-weight: 700; }
+
+.token.string,
+.token.attr-value,
+.token.char { color: #4b6b3f; }
+
+.token.number,
+.token.boolean,
+.token.constant { color: #3f5a72; }
+
+.token.function,
+.token.class-name { color: var(--ink); font-weight: 700; }
+
+.token.operator,
+.token.entity,
+.token.url,
+.token.variable { color: var(--ink-soft); }
