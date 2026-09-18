@@ -126,6 +126,73 @@ In bedrock a new identifiers is assigned using `var` or `const` keyword. Here id
 are mutable by default and variables assigned with `const` are non-mutable, bedrock overall has this property that
 it's mutable by default.
 
+```c
+var a = 5;
+var b = 5.42;
+```
+
+> here the type of `a` and `b` will be inferred, so it's not dynamic typing.
+
+You can declare variables with explicit types.
+
+Like this:
+
+```c
+var a: i32 = 5;
+var b: f32 = 5.42;
+var c: str = "hello sir";
+```
+
+> here the types are explicitly declared in syntax.
+
+### Type Declarations
+
+All user defined types begin with the type keyword.
+
+- **Define a struct in bedrock**
+
+```go
+type Person = struct
+  name: str,
+  age: u32,
+end
+```
+
+Structs are constructed using `where` keyword
+
+```go
+func main() -> i32
+  var p1 = Point where name = "Alice", age = 20 end
+  return 0;
+end
+```
+
+> when using **where** initializing all values is necessary and if not then you will encounter a `semantic error`
+> for safety purposes.
+
+- **Define an **enum** in bedrock** (`todo`)
+
+```go
+type Color = enum
+  red,
+  yellow,
+  green,
+end
+```
+
+- **Aliasing in bedrock**
+
+it's like `#define` or type aliasing in go.
+
+```go
+type real = f32;
+type vecstring = [_]str;
+```
+
+
+> note: when type used for aliasing then `end` keyword is not used, instead `;` is used to end it.
+> see [discussion](https://github.com/orgs/bedrock-lang/discussions/2#discussioncomment-18088475) if you are curious as to why.
+
 ### Newlines
 
 A bedrock program could completely be written in a single line, though new lines should be used for convinience and better
