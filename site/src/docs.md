@@ -190,8 +190,9 @@ type vecstring = [_]str;
 ```
 
 
-> note: when type used for aliasing then `end` keyword is not used, instead `;` is used to end it.
-> see [discussion](https://github.com/orgs/bedrock-lang/discussions/2#discussioncomment-18088475) if you are curious as to why.
+> note: when type used for aliasing then **`end`** keyword is not used, instead **`;`** is used to end it.
+As it's not starting a block and just ending in one line, unlike `struct` and `enum` (special types).
+> see [discussion](https://github.com/orgs/bedrock-lang/discussions/2#discussioncomment-18088475) if you are more curious as to why.
 
 ### Newlines
 
