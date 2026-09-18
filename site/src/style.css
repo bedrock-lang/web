@@ -375,3 +375,33 @@ pre:hover .copy-btn,
 .token.entity,
 .token.url,
 .token.variable { color: var(--ink-soft); }
+
+/* ---- figures / images ---- */
+
+figure {
+  max-width: 400px;
+  margin: 2.5rem auto;
+  padding: 0;
+  text-align: center;
+}
+
+figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: var(--paper-dim);
+}
+
+figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+}
+
+figcaption b {
+  color: var(--ink-soft);
+  font-weight: 700;
+}

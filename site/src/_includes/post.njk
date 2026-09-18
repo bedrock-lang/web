@@ -4,7 +4,7 @@ layout: base.njk
 <article class="wrap">
   <div class="page-head">
     <h1>{{ title }}</h1>
-    <p class="post-meta">{{ date | readableDate }}</p>
+    <p class="meta">By {{ author }} · {{ date | readableDate }}</p>
   </div>
 {{ content | safe }}
 </article>

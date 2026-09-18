@@ -8,6 +8,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/style.css");
   eleventyConfig.addPassthroughCopy("src/CNAME");
   eleventyConfig.addPassthroughCopy("src/bedrock.ico");
+  eleventyConfig.addPassthroughCopy("src/images");
 
   const md = markdownIt({ html: true }).use(markdownItAnchor, {
     slugify: (s) =>
