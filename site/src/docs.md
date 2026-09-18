@@ -559,6 +559,59 @@ end
 
 Here in both example the binding variable is `i` and it iterates over `arr` or the `range`.
 
+### Optional Values (`todo`)
+
+So some operations or some containers could have a value or not (maybe). These are optional values. And such
+operations contain the optinal type.
+
+These are denoted by `?` at suffix of them like `?user`
+
+Here's a function returning optional value:
+
+```c
+func find_user(id: u32) -> ?User
+```
+
+Here the return User structure could have a `User struct` or `nil`.
+
+### Error Propogation (`todo`)
+
+The language syntax provides a concise way to propogate errors.
+An error returning value will have a `!` at the end like `result!` unlike `?` which is appended at starting.
+
+```c
+func load_config() -> Config!
+    var file = try open("config.cfg")
+    return try parse(file)
+end
+```
+
+- If the operation succeeds, execution continues using the returned value.
+- If the operation returns an error, the current function immediately returns that error to its caller.
+
+### Modules (`todo`)
+
+Each `bok` file is a module and modules are imported using `import` keyword.
+
+```python
+import io;
+import math;
+import graphics.window;
+```
+
+any function, identifiers, user defined types, marked with **pub** could be now accessed in the file these modules
+are imported into.
+
+like:
+
+```c
+pub func add(a: i32, b: i32) -> i32
+  return a + b
+end
+```
+
+> So, by default all declarations are private in a module.
+
 ---
 ---
 
