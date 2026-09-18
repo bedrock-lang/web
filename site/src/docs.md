@@ -419,11 +419,11 @@ type checking but for **proc** it's not at all necessary proved in obvious way t
 
 This also syncs well with the language's procedural roots.
 
-## Control Flow
+### Control Flow
 
 In bedrock control flow constructs includes and are not limited to `if`, `match`, `while`, `for`.
 
-### If
+#### --- If Statement ---
 
 If is used for conditional statement control flow.
 
@@ -471,7 +471,7 @@ end
 
 > output: neo
 
-### Match-Case (`todo`)
+#### --- Match-Case (`todo`) ---
 
 The `match-case` statements are the `switch-case` of bedrock.
 
@@ -509,7 +509,7 @@ match Color
 end
 ```
 
-### While
+#### --- While Loop ---
 
 The **While** loop works in same style, by instatiating a while block ending with `end`.
 
@@ -530,7 +530,7 @@ end
 > 3  
 > 4  
 
-### For
+#### --- For Loop ---
 
 The **For** loop works in same style, by instatiating a for block ending with `end`.
 You specify a binding variable and a range or an iterable structure.
