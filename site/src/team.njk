@@ -1,0 +1,53 @@
+---
+layout: base.njk
+permalink: /team.html
+title: Team — Bedrock
+description: The people working on the Bedrock language.
+members:
+  - name: Aliqyan
+    github: Aliqyan-21
+    role: founder
+  - name: vasu
+    github: vasucp1207
+    role: founder
+  - name: Soham
+    github: skadewdl3
+    role: contributor
+  - name: Prem
+    github: prem-swarup
+    role: contributor
+---
+<div class="wrap page-head">
+  <h1>Team</h1>
+  <p class="muted">The people working on the language.</p>
+</div>
+
+<div class="wrap">
+  {%- set founders = members | byRole("founder") %}
+  {%- if founders.length %}
+  <h2>Founders</h2>
+  <div class="team-grid">
+    {%- for m in founders %}
+    <div class="member">
+      <img class="avatar" src="https://github.com/{{ m.github }}.png" alt="{{ m.name }}'s avatar" width="96" height="96">
+      <h3>{{ m.name }}</h3>
+      <a class="github" href="https://github.com/{{ m.github }}">@{{ m.github }}</a>
+    </div>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+
+  {%- set contributors = members | byRole("contributor") %}
+  {%- if contributors.length %}
+  <h2>Contributors</h2>
+  <div class="team-grid">
+    {%- for m in contributors %}
+    <div class="member">
+      <img class="avatar" src="https://github.com/{{ m.github }}.png" alt="{{ m.name }}'s avatar" width="96" height="96">
+      <h3>{{ m.name }}</h3>
+      <a class="github" href="https://github.com/{{ m.github }}">@{{ m.github }}</a>
+    </div>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</div>
