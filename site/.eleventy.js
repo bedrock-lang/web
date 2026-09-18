@@ -9,6 +9,10 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/CNAME");
   eleventyConfig.addPassthroughCopy("src/bedrock.ico");
   eleventyConfig.addPassthroughCopy("src/images");
+  eleventyConfig.addPassthroughCopy({
+    "node_modules/@fontsource-variable/recursive/index.css": "fonts/recursive.css",
+    "node_modules/@fontsource-variable/recursive/files": "fonts/files"
+  });
 
   const md = markdownIt({ html: true }).use(markdownItAnchor, {
     slugify: (s) =>

@@ -10,8 +10,8 @@
   --rule-strong: #b5ad98;
   --accent: #8b2500;
   --code-bg: #f1ecdf;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
-  --mono: "SF Mono", "Fira Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --serif: "Recursive Variable", "Iowan Old Style", Georgia, serif;
+  --mono: "Recursive Variable", "SF Mono", Menlo, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -25,6 +25,7 @@ body {
   font-family: var(--serif);
   line-height: 1.65;
   text-rendering: optimizeLegibility;
+  font-variation-settings: "MONO" 0, "CASL" 0.3, "slnt" 0;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -137,6 +138,8 @@ code {
   background: var(--code-bg);
   padding: 0.12em 0.35em;
   border-radius: 3px;
+  font-variation-settings: "MONO" 1, "CASL" 0.2;
+  font-variant-ligatures: none;
 }
 
 pre {
@@ -146,6 +149,8 @@ pre {
   padding: 1rem 1.2rem;
   overflow-x: auto;
   line-height: 1.55;
+  font-variation-settings: "MONO" 1, "CASL" 0.2;
+  font-variant-ligatures: none;
 }
 
 pre code {
@@ -235,7 +240,11 @@ pre code {
 
 /* ---- blog ---- */
 
-.post-list { list-style: none; padding: 0; margin: 1.5rem 0; }
+.post-list {
+  list-style: none; padding: 0; margin: 1.5rem 0; 
+  font-variation-settings: "MONO" 1, "CASL" 0.2;
+  font-variant-ligatures: none;
+}
 
 .post-list li {
   padding: 1.2rem 0;
@@ -292,6 +301,8 @@ pre code {
   font-family: var(--mono);
   font-size: 0.85rem;
   text-decoration: none;
+  font-variation-settings: "MONO" 1, "CASL" 0.2;
+  font-variant-ligatures: none;
 }
 
 /* ---- misc ---- */
@@ -399,6 +410,8 @@ figcaption {
   font-size: 0.85rem;
   color: var(--ink-faint);
   font-family: var(--mono);
+  font-variation-settings: "MONO" 1, "CASL" 0.2;
+  font-variant-ligatures: none;
 }
 
 figcaption b {
