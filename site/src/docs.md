@@ -612,6 +612,142 @@ end
 
 > So, by default all declarations are private in a module.
 
+
+## Unsafe (`wip`)
+
+The language is memory safe by default. Memory for language objects is managed automatically through the
+region model (see: [memory model](#memory-model)), eliminating the need for manual allocation and deallocation in normal programs.
+
+Certain low level operations, however, cannot be verified or protected by the compiler. These
+operations must be performed inside an unsafe block.
+
+```c
+unsafe
+// Unsafe operations
+end
+```
+
+An unsafe block explicitly indicates that the programmer is taking responsibility for the correctness
+of the enclosed code.
+
+The presence of an unsafe block serves two purposes:
+- It enables low level operations that are otherwise prohibited.
+- It clearly communicates to readers that this section of code requires additional care and review.
+
+Operations permitted within an unsafe block include:
+- Manual memory allocation and deallocation.
+- Raw pointer dereferencing.
+- Pointer arithmetic.
+- Calling foreign (C) functions.
+- Accessing memory mapped hardware.
+- Low level memory manipulation.
+- Inline assembly (near future).
+
+Example:
+
+```c
+extern func malloc(size: usize) -> *u8
+extern proc free(ptr: *u8)
+
+unsafe
+  var buffer = malloc(4096)
+  *(buffer + 8) = 42
+  free(buffer)
+end
+```
+
+## Memory Model (`wip`)
+
+### Region Based
+
+Bedrock uses regions to manage memory, every objects is being allocated in a region and it is reclaimed
+from all of the region at once when the region goes out of scope intead of keep tracking each allocation.
+
+### Invariants about region model
+
+- Every allocation belongs to one region, all allocations within an arena are reclaimed together when that
+region is destroyed.
+- A reference cannot outlive its target, program cannot contain dangling references.
+- Destruction happens exactly once when the region goes out of scope.
+
+The compiler tracks the lifetime of references to make sure that a reference cannot outlive the
+region it currently lives in.
+
+```c
+func ret_person() -> &Person
+  region R
+    var p = Person where id = 0, age = 24 end
+    return &p;
+  end
+end
+```
+
+The compiler can determine that lifetime of `return` = `caller` and lifetime of `p` in region `R` ends before
+caller uses the return reference, preventing dangling reference at compile time. User is not explicitly required
+to annotate the region R in the above example the compiler can infer the lifetime in a function body.
+
+### Lifetime concepts
+
+#### Lexical Region
+
+A lexical region corresponds to a local scope.
+
+```c
+proc lexical()
+  region @outer
+    var p1: &Person
+    region @inner
+      var p2 = Person where name = "Alice", age = 24 end
+    p1 = &p2
+    end
+  end
+end
+```
+
+Here both **p1** and **p2** are in lexical region, `lifetime(p2) < lifetime(p1)` so **p1** cannot
+reference to **p2**. Its not necessary to type the region block manually the compiler can infer the
+region annotations in this case.
+
+#### Function params
+
+Parameters are not a separate storage region. A reference parameter borrows an allocation
+from the caller.
+
+```c
+proc set_friend(p: &Person, friend: &Person)
+  p.friend = friend
+end
+```
+
+Because friend might have a shorter lifetime than p, we need some lifetime annotation hints here.
+
+```c
+proc set_friend(p: &@p Person, friend: &@r Person)[@p <= @r]
+  p.friend = friend
+end
+```
+
+#### Return
+
+A function cannot return a reference to storage whose lifetime ends before the caller can use the
+return value. Local references cannot escape their lexical region. We cannot return a reference to
+local variable to the caller that will result in dangling pointer.
+
+```c
+func foo() -> &Person
+  var p = Person where name = "Alice", age = 24 end
+  return &p
+end
+```
+
+#### Static region
+
+Static storage lives for the entire program.
+
+```c
+var local = new(@static) Person where name = "Alice", age = 24 end
+```
+
 ---
 ---
 
