@@ -105,7 +105,7 @@ type      struct  enum    static  const   var
 defer     unsafe  if      elif    else    for
 in        while   match   case    return  orelse
 comptime  try     end     true    false   break
-continue  nil     where   new     ptr undefined
+continue  nil     where   new     ptr     undefined
 ```
 
 ### Identifiers
