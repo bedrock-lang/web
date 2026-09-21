@@ -26,7 +26,7 @@ author: Aliqyan-21
 </style>
 
 We say Bedrock is memory safe, but we also say that it does not have a GC or a borrow checker like in `rust`,
-and it's not completely something like zig in which you have to do manual memory management, then how
+and it's not completely something like `zig` and `c` in which you have to do manual memory management, then how
 does bedrock handles memory? How it prevents memory leaks, and what does the programmer have in hand then for
 memory management in bedrock?
 
@@ -133,7 +133,7 @@ proc lexical()
     region @outer
         var p1: &Person
         region @inner
-            var p2 = Person(name = "Alice", age = 24)
+            var p2 = Person where name = "Alice", age = 24 end
             p1 = &p2          -- NOT ALLOWED
         end
     end
@@ -193,7 +193,6 @@ proc main()
             var inner_value = 99
             target = &inner_value       -- NOT ALLOWED
         end
-        var v = *target
     end
 end
 ```
@@ -249,12 +248,14 @@ Here we use the rule 2's own check but this time we do it on the symbols instead
 
 ```lua
 -- kept:
-set_friend(&alice, &bob)     -- both in @outer
+region @outer
+    set_friend(&alice, &bob)     -- both in @outer
 
--- rejected at the call:
-region @inner
-    var temp = Person...
-    set_friend(&alice, &temp)   -- temp doesn't outlive alice
+    -- rejected at the call:
+    region @inner
+        var temp = Person where name = "jack", firend = "alice" end
+        set_friend(&alice, &temp)   -- temp doesn't outlive alice
+    end
 end
 ```
 
@@ -291,7 +292,7 @@ and freedom, so this rule gives that to the programmer, when you want something 
 
 So you want to build something that outlives the region you're currently standing in?
 
-Introducing...**`new(@p)`**.
+Introducing...**`new(@p)`** a way of doing region promotion.
 
 It allocates directly at whatever depth `@p` names, instead of the region you happen to be in when you write the line:
 
