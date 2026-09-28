@@ -10,7 +10,7 @@ subtitle: "bedrock-lang grammar"
 # Program
 program        = { item }
 item           = import_def | function | proc_def | struct_def | enum_def | extern_def
-               | global_var_def | const_def
+               | var_def | const_def
 
 import_def      = "import" IDENT { "." IDENT } ";"
 
@@ -28,13 +28,18 @@ block           = { statement }
 
 # Foreign Function Interface
 extern_def      = "extern" ( "func" IDENT "(" [ extern_params ] ")" "->" type
-                    | "proc" IDENT "(" [ extern_params ] ")" ) ";"
+                | "proc" IDENT "(" [ extern_params ] ")" ) ";"
 extern_params   = extern_param { "," extern_param } [ "," "..." ]
                 | "..."
 extern_param    = IDENT ":" type
 
 # Structs and Enums
 struct_def      = [ "pub" ] "type" IDENT [ type_params ] "=" "struct" [ struct_members ] "end"
+
+struct_literal  = ( IDENT | "_" ) "where" [ field_inits ] "end"
+field_inits     = field_init { "," field_init } [ "," ]
+field_init      = IDENT "=" expression
+
 struct_members  = struct_member { struct_member }
 struct_member   = struct_field ","
                 | method_def
@@ -54,10 +59,9 @@ statement       = var_stmt | local_static_var_stmt | assign_stmt | defer_stmt
 var_stmt        = "var" IDENT [ ":" type ] "=" expression ";"
 assign_stmt     = place_expr ( "=" | compound_op ) expression ";"
 
-# module scope only — plain mutable global, "pub" is meaningful here
-global_var_def  = [ "pub" ] "var" IDENT [ ":" type ] "=" expression ";"
+var_def  = [ "pub" ] "var" IDENT [ ":" type ] "=" expression ";"
 
-# function scope only — no "pub" here, a local static can't be exposed outside its function
+# like c, does not change value in simultanous calls.
 local_static_var_stmt = "static" "var" IDENT [ ":" type ] "=" expression ";"
 
 const_def       = [ "pub" ] "const" IDENT [ ":" type ] "=" expression ";"
@@ -68,13 +72,13 @@ place_expr      = "*" "(" expression ")"
 compound_op     = "+=" | "-=" | "*=" | "/=" | "%="
                 | "&=" | "|=" | "^=" | "<<=" | ">>="
 
-defer_stmt      = "defer" ( var_stmt | assign_stmt | control_flow_stmt | return_stmt | expr_stmt )
+defer_stmt      = "defer" block "end"
 
 unsafe_stmt     = "unsafe" block "end"
 
-control_flow_stmt = control_flow_expr    # if/match/while/for used as a statement — no ";", it ends on "end"
+control_flow_stmt = control_flow_expr        # if/match/while/for used as a statement — no ";", it ends on "end"
 
-return_stmt     = return_expr ";"        # return is statement-only, never nested inside an expression
+return_stmt     = return_expr ";"            # return is statement-only, never nested inside an expression
 
 expr_stmt       = expression ";"
 
@@ -84,7 +88,7 @@ if_expr            = "if" expression block { elif_clause } [ else_clause ] "end"
 elif_clause        = "elif" expression block
 else_clause        = "else" block
 return_expr        = "return" [ expression ]
-for_expr           = "for" IDENT "in" expression block "end"
+for_expr           = "for" IDENT [ "," IDENT ] "in" expression [ "," additive ".." ] block "end"
 while_expr         = "while" expression block "end"
 
 # Match expression
@@ -107,27 +111,28 @@ bitor_expr      = bitxor_expr { "|" bitxor_expr }
 bitxor_expr     = bitand_expr { "^" bitand_expr }
 bitand_expr     = shift_expr { "&" shift_expr }
 shift_expr      = range_expr { ( "<<" | ">>" ) range_expr }
-range_expr      = additive [ ".." additive ]
+range_expr      = additive [ ( ".." | "..=" ) additive ]
 additive        = multiplicative { ( "+" | "-" ) multiplicative }
 multiplicative  = unary { ( "*" | "/" | "%" ) unary }
 unary           = ( "-" | "!" | "~" | "&" | "*" | "try" ) unary | postfix
 postfix         = primary { suffix }
 suffix          = "." IDENT
                 | "(" [ call_args ] ")"
-                | "[" expression { "," expression } [ "," ] "]"   # handles both foo[index] and foo[type]
+                | "[" expression { "," expression } [ "," ] "]" # handles both foo[index] and foo[type]
                 | "?"
 
 primary         = INTEGER | FLOAT | CHAR | STRING | BOOL | IDENT
                 | control_flow_expr
                 | comptime_expr
                 | array_literal
+                | struct_literal
                 | "(" expression ")"
 
 array_literal = "[" [ array_elems ] "]"
 array_elems = expression { "," expression } [ "," ]
 
 call_args       = call_arg { "," call_arg } [ "," ]
-call_arg        = [ IDENT "=" ] expression
+call_arg        = expression
 
 type            = [ "?" ] base_type [ "!" ]
 
@@ -138,11 +143,13 @@ base_type       = "i8" | "i16" | "i32" | "i64"
                 | "bool" | "char" | "str"
                 | "*" type
                 | array_type
+                | slice_type
                 | named_type
                 | func_type
                 | proc_type
 
 array_type = "[" ( INTEGER | "_" ) "]" type
+slice_type = "[" "]" type
 named_type = IDENT [ "[" type { "," type } [ "," ] "]" ]
 
 type_list  = type { "," type } [ "," ]
