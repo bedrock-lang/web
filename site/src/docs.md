@@ -339,7 +339,7 @@ Array are data structures that stores homogenous type of elements in them.
 In bedrock array are initialized like this:
 
 ```c
-var arr: [10]i32 = [];
+var arr: [10]i32 = undefined;
 ```
 
 this initializes an empty array of capacity 10.
@@ -362,16 +362,20 @@ var arr = [1,2,3,4,5];
 But this:
 
 ```c
+var arr = undefined;
+// or
 var arr = [];
 ```
 
 or this:
 
 ```c
+var arr:[_]i32 = undefined;
+// or
 var arr:[_]i32 = [];
 ```
 
-will result into an obvious  **semantic error** -> `cannot infer type or size of empty array literal`
+will result into obvious  **semantic errors** -> `cannot infer type of 'undefined' without context` and `cannot infer type or size of empty array literal`
 
 > What's inferabble is inferabble what's not inferabble cannot be inferred.
 
